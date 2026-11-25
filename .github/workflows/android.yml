@@ -1,0 +1,59 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install bubblewrap
+        run: npm install -g @bubblewrap/cli
+
+      - name: Materialise the keystore
+        if: ${{ secrets.SIGNING_KEYSTORE_BASE64 != '' }}
+        run: |
+          echo "${{ secrets.SIGNING_KEYSTORE_BASE64 }}" | base64 -d > android.keystore
+          ls -l android.keystore
+
+      - name: Build the app
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.SIGNING_KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: |
+          yes | bubblewrap init --manifest https://massai-itu.ca/mind.webmanifest || true
+          # init writes ./app; keep our package id and paths from twa-manifest.json
+          cp twa-manifest.json app/twa-manifest.json 2>/dev/null || true
+          cd app
+          bubblewrap build --skipPwaValidation \
+            --signingKeyPath ../android.keystore \
+            --signingKeyAlias android \
+            --signingKeyPassword "$KEYSTORE_PASSWORD" \
+            --keyPassword "$KEY_PASSWORD"
+
+      - name: Collect artifacts
+        run: |
+          mkdir -p out
+          cp app/*.apk app/*.aab out/ 2>/dev/null || true
+          ls -la out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: massai-mind-android
+          path: out/*
+          if-no-files-found: warn
