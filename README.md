@@ -1,4 +1,6 @@
-# The Mind
+# Massai Mind
+
+*Call it **The Mind** once you are inside it.*
 
 A standalone visualiser for **Massai's mind** — the same sphere that sits behind the app's front
 door, with nothing else attached to it.

@@ -1,8 +1,8 @@
 {
   "packageId": "ca.massai.mind",
   "host": "massai-itu.ca",
-  "name": "The Mind",
-  "launcherName": "The Mind",
+  "name": "Massai Mind",
+  "launcherName": "Massai Mind",
   "display": "fullscreen",
   "themeColor": "#060504",
   "themeColorDark": "#060504",
